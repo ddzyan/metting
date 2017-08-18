@@ -11,7 +11,19 @@ var meeting = require('./routes/meeting');
 var cors = require('cors');
 var app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://192.168.20.211:18081',
+    'http://192.168.20.211:18082',
+    'https://61.164.221.4:18081',
+    'http://localhost:4200',
+    'https://localhost:4200'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST'],
+  optionsSuccessStatus: 200
+}));
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -27,12 +39,6 @@ app.use(bodyParser.urlencoded({
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.all('*', function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
-  res.header("Content-Type", "application/json;charset=utf-8");
-  next();
-});
 
 app.use(session({
   //name: 'testapp', //这里的name值得是cookie的name，默认cookie的name是：connect.sid
@@ -40,7 +46,7 @@ app.use(session({
     maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: false
   }, //设置maxAge是80000ms，即80s后session和相应的cookie失效过期
-  secret: 'keyboardcat',
+  secret: 'keyboard cat',
   resave: false,
   saveUninitialized: false
 }));

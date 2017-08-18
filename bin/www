@@ -5,16 +5,15 @@
  */
 
 var app = require('../app');
-var debug = require('debug')('meeting:server');
+var debug = require('debug')('metting:server');
 var http = require('http');
 var https = require('https');
 var fs = require('fs');
-var SocketClient = require('../socket_io/socketClient.js');
-
-var janusConf = require('../configuration/configuration_file.js').janus_dev;
+var certificate = fs.readFileSync('certs/mycert.pem', 'utf8');
+var privateKey = fs.readFileSync('certs/mycert.key', 'utf8');
 var credentials = {
-  key: fs.readFileSync(janusConf.httpsKey, 'utf8'),
-  cert: fs.readFileSync(janusConf.httpsCert, 'utf8')
+  key: privateKey,
+  cert: certificate
 };
 var httpsServer = https.createServer(credentials, app);
 var PORT = 4000;
@@ -33,8 +32,6 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
-var socketClient = new SocketClient(server);
-
 httpsServer.listen(SSLPORT, function () {
   console.log('HTTPS Server is running on: https://localhost:%s', SSLPORT);
 });
@@ -42,9 +39,7 @@ httpsServer.listen(SSLPORT, function () {
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port, function () {
-  console.log('HTTPS Server is running on: http://localhost:%s', port);
-});
+server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 

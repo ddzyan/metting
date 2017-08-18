@@ -12,6 +12,7 @@
             token: "ddzAdmin"
         }
     }).done((respons) => {
+        console.log(typeof(respons));
         if (respons.code) {
             janusId = respons.parms.id;
             useVedioRoom();
