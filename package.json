@@ -1,0 +1,30 @@
+{
+  "name": "meeting",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "body-parser": "~1.15.2",
+    "co": "^4.6.0",
+    "cookie-parser": "~1.4.3",
+    "cors": "^2.8.4",
+    "debug": "~2.2.0",
+    "ejs": "~2.5.2",
+    "express": "~4.14.0",
+    "express-session": "^1.15.5",
+    "fs": "^0.0.1-security",
+    "https": "^1.0.0",
+    "iconv-lite": "^0.4.18",
+    "log4js": "^2.3.3",
+    "morgan": "~1.7.0",
+    "mysql": "^2.14.1",
+    "nodemailer": "^4.0.1",
+    "path": "^0.12.7",
+    "sequelize": "^4.4.2",
+    "sequelize-auto": "^0.4.28",
+    "serve-favicon": "~2.3.0",
+    "socket.io": "^2.0.3"
+  }
+}
