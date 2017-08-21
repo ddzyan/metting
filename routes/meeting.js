@@ -45,7 +45,6 @@
                      crypto.randomBytes(16, function (ex, buf) {
                          const token = buf.toString('hex');
                          req.session.publicKey = token;
-                         //req.session.save();
                          sendSandardMsg(res, 1, {
                              id: inquiryAccount.rows[0].id,
                              publicKey: token
@@ -116,9 +115,10 @@
  router.get('/autoLogin', (req, res) => {
      try {
          logMeeting.debug('autoLogin enter');
-         if (req.session.userId) {
+         if (req.session.userId && req.session.publicKey) {
              sendSandardMsg(res, 1, {
-                 id: req.session.userId
+                 id: req.session.userId,
+                 publicKey: req.session.publicKey
              });
          } else {
              sendSandardMsg(res, 2, '请先登录');
