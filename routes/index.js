@@ -132,7 +132,7 @@
          if (error) {
            sendSandardMsg(res, 0, error);
          } else {
-           sendSandardMsg(res, 1, '操作成功');
+           sendSandardMsg(res, 1, parm);
          }
        });
      } else {

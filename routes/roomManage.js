@@ -165,8 +165,8 @@
                      _callback(error, null);
                  } else {
                      console.log(parm);
-                     if (parm.janus == 'keepalive') {
-                         _callback(null, '操作成功');
+                     if (parm.janus == 'keepalive' || parm.janus == 'event') {
+                         _callback(null, parm);
                      } else {
                          _callback('操作失败', null);
                      }
