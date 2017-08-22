@@ -7,7 +7,6 @@
         url: './createJanus',
         type: 'post',
         data: {
-            janusUrl: '/janus',
             transaction: 'das3213b213dd',
             token: "ddzAdmin"
         }
