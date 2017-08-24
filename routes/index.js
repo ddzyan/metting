@@ -143,6 +143,28 @@
    }
  })
 
+ //查看指定房间用户信息
+ router.post('/roomUsersInfo', (req, res) => {
+   try {
+     console.log('roomUsersInfo enter');
+     const _janusId = req.body.janusId;
+     const _sessionId = req.body.sessionId;
+     const _roomId = Number(req.body.roomId);
+     const _transaction = req.body.transaction;
+     const janusUrl = '/janus/' + _janusId + '/' + _sessionId;
+
+     roomManage.listparticipants(janusUrl, _transaction, _roomId, (error, parm) => {
+       if (error) {
+         sendSandardMsg(res, 0, error);
+       } else {
+         sendSandardMsg(res, 1, parm);
+       }
+     });
+   } catch (error) {
+     sendSandardMsg(res, 0, error.message);
+   }
+ })
+
  module.exports = router;
 
  //返回固定格式

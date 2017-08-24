@@ -260,6 +260,53 @@
      }
  })
 
+ //检测房间是否存在
+ router.post('/roomExists', (req, res) => {
+     try {
+         logMeeting.debug('roomExists enter');
+         const _janusId = req.body.janusId;
+         const _sessionId = req.body.sessionId;
+         const _roomId = Number(req.body.roomId);
+         const _transaction = req.body.transaction;
+         const janusUrl = '/janus/' + _janusId + '/' + _sessionId;
+
+         roomManage.exists(janusUrl, _transaction, _roomId, (error, parm) => {
+             if (error) {
+                 sendSandardMsg(res, 0, error);
+             } else {
+                 sendSandardMsg(res, 1, parm);
+             }
+         });
+     } catch (error) {
+         sendSandardMsg(res, 1, error.message);
+     }
+ })
+
+ //踢出用户
+ router.post('/kickOutUser', checkToken, (req, res) => {
+     try {
+         logMeeting.debug('kickOutUser enter');
+         const _janusId = req.body.janusId;
+         const _sessionId = req.body.sessionId;
+         const _roomId = Number(req.body.roomId);
+         const _transaction = req.body.transaction;
+         const _outUserId = Number(req.body.outUserId);
+         const _secret = req.body.secret;
+
+         const janusUrl = '/janus/' + _janusId + '/' + _sessionId;
+
+         roomManage.kickOutUser(janusUrl, _transaction, _roomId, _secret, _outUserId, (error, parm) => {
+             if (error) {
+                 sendSandardMsg(res, 0, error);
+             } else {
+                 sendSandardMsg(res, 1, parm);
+             }
+         });
+     } catch (error) {
+         sendSandardMsg(res, 1, error.message);
+     }
+ })
+
  module.exports = router;
 
  //返回固定格式

@@ -204,8 +204,8 @@
              };
              sendPostHttps(_janusUrl, parms, (error, parm) => {
                  if (error) {
-                    console.log(error);
-                    logMeeting.error('createVedioRoom error  :' + error);
+                     console.log(error);
+                     logMeeting.error('createVedioRoom error  :' + error);
                      _callback(error, null);
                  } else {
                      console.log(parm);
@@ -312,11 +312,11 @@
      },
      /**
      *用户关闭视频流
-     *@method detachData 
+     *@method hangup 
      @parm {String} 事物代码 回调函数
      @parm {Function} _callback 回调函数
      */
-     detachData: (_janusUrl, _transaction, _callback) => {
+     hangup: (_janusUrl, _transaction, _callback) => {
          const _parms = {
              janus: "hangup",
              transaction: _transaction
@@ -328,6 +328,100 @@
                  console.log(parm);
                  if (parm.janus == 'success') {
                      _callback(null, '操作成功');
+                 } else {
+                     _callback('操作失败', null);
+                 }
+             }
+         });
+     },
+     /**
+     *指定房间用户信息
+     *@method listparticipants 
+     @parm {String} _janusUrl 链接地址
+     @parm {String} _transaction 事物代码
+     @parm {Int} _roomId 房间编号
+     @parm {Function} _callback 回调函数
+     */
+     listparticipants: (_janusUrl, _transaction, _roomId, _callback) => {
+         const _parms = {
+             janus: "message",
+             transaction: _transaction,
+             body: {
+                 room: _roomId,
+                 request: "listparticipants"
+             }
+         };
+         sendPostHttps(_janusUrl, _parms, (error, parm) => {
+             if (error) {
+                 _callback(error, null);
+             } else {
+                 console.log(parm);
+                 if (parm.janus == 'success') {
+                     _callback(null, parm.plugindata.data);
+                 } else {
+                     _callback('操作失败', null);
+                 }
+             }
+         });
+     },
+     /**
+     *查看房间是否存在
+     *@method exists 
+     @parm {String} _janusUrl 链接地址
+     @parm {String} _transaction 事物代码
+     @parm {Int} _roomId 房间编号
+     @parm {Function} _callback 回调函数
+     */
+     exists: (_janusUrl, _transaction, _roomId, _callback) => {
+         const _parms = {
+             janus: "message",
+             transaction: _transaction,
+             body: {
+                 room: _roomId,
+                 request: "exists"
+             }
+         };
+         sendPostHttps(_janusUrl, _parms, (error, parm) => {
+             if (error) {
+                 _callback(error, null);
+             } else {
+                 console.log(parm);
+                 if (parm.janus == 'success') {
+                     _callback(null, parm.plugindata.data);
+                 } else {
+                     _callback('操作失败', null);
+                 }
+             }
+         });
+     },
+     /**
+      *踢出指定用户 
+      *@method kickOutUser 
+     @parm {String} _janusUrl 链接地址
+     @parm {String} _transaction 事物代码
+     @parm {Int} _roomId 房间编号
+     @parm {String} _secret 房间密码
+     @parm {Int} _outUserId 踢出用户的janusId
+     @parm {Function} _callback 回调函数
+      */
+     kickOutUser: (_janusUrl, _transaction, _roomId, _secret, _outUserId, _callback) => {
+         const _parms = {
+             janus: "message",
+             transaction: _transaction,
+             body: {
+                 room: _roomId,
+                 secret: _secret,
+                 id: _outUserId,
+                 request: "kick"
+             }
+         };
+         sendPostHttps(_janusUrl, _parms, (error, parm) => {
+             if (error) {
+                 _callback(error, null);
+             } else {
+                 console.log(parm);
+                 if (parm.janus == 'success') {
+                     _callback(null, parm.plugindata.data);
                  } else {
                      _callback('操作失败', null);
                  }
