@@ -5,7 +5,9 @@
  const configuration = require('../configuration/configuration_file.js');
  const janusConf = configuration.janus_dev;
  const plugins = configuration.plugins;
+ const log4js = require("log4js");
 
+ const logMeeting = log4js.getLogger('log_meeting');
  const HOSTNAME = janusConf.hostName;
  const HOSTPORT = janusConf.hostPort;
  const HTTPSKEY = janusConf.httpsKey;
@@ -162,9 +164,12 @@
              const content = 'rid=' + new Date().getTime() + '&maxev=1';
              sendGetHttps(_janusUrl, content, (error, parm) => {
                  if (error) {
+                     console.log(error);
+                     logMeeting.error('keepLive error :' + error);
                      _callback(error, null);
                  } else {
                      console.log(parm);
+                     logMeeting.debug('keepLive :' + parm);
                      if (parm.janus == 'keepalive' || parm.janus == 'event') {
                          _callback(null, parm);
                      } else {
@@ -199,8 +204,12 @@
              };
              sendPostHttps(_janusUrl, parms, (error, parm) => {
                  if (error) {
+                    console.log(error);
+                    logMeeting.error('createVedioRoom error  :' + error);
                      _callback(error, null);
                  } else {
+                     console.log(parm);
+                     logMeeting.debug('createVedioRoom  :' + parm);
                      console.log(parm);
                      if (parm.janus == 'success') {
                          _callback(null, parm.plugindata.data.room);
@@ -263,11 +272,62 @@
      videoConfig: (_janusUrl, _parms, _callback) => {
          sendPostHttps(_janusUrl, _parms, (error, parm) => {
              if (error) {
+                 console.log(error);
+                 logMeeting.error('videoConfig error :' + error);
                  _callback(error, null);
              } else {
                  console.log(parm);
+                 logMeeting.debug('videoConfig :' + parm);
                  if (parm.janus == 'ack') {
                      _callback(null, '发送成功');
+                 } else {
+                     _callback('操作失败', null);
+                 }
+             }
+         });
+     },
+     /**
+     *关闭无效数据通道
+     *@method detachData 
+     @parm {String} 事物代码 回调函数
+     @parm {Function} _callback 回调函数
+     */
+     detachData: (_janusUrl, _transaction, _callback) => {
+         const _parms = {
+             janus: "detach",
+             transaction: _transaction
+         };
+         sendPostHttps(_janusUrl, _parms, (error, parm) => {
+             if (error) {
+                 _callback(error, null);
+             } else {
+                 console.log(parm);
+                 if (parm.janus == 'success') {
+                     _callback(null, '操作成功');
+                 } else {
+                     _callback('操作失败', null);
+                 }
+             }
+         });
+     },
+     /**
+     *用户关闭视频流
+     *@method detachData 
+     @parm {String} 事物代码 回调函数
+     @parm {Function} _callback 回调函数
+     */
+     detachData: (_janusUrl, _transaction, _callback) => {
+         const _parms = {
+             janus: "hangup",
+             transaction: _transaction
+         };
+         sendPostHttps(_janusUrl, _parms, (error, parm) => {
+             if (error) {
+                 _callback(error, null);
+             } else {
+                 console.log(parm);
+                 if (parm.janus == 'success') {
+                     _callback(null, '操作成功');
                  } else {
                      _callback('操作失败', null);
                  }
