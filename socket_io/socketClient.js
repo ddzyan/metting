@@ -1,7 +1,6 @@
 "use strcict"
 const logSocketClient = require('../configuration/log4js.js').log_socketClient;
 
-
 const socketClientInit = (server) => {
     const io = require('socket.io')(server);
     let meetingManage = {};
@@ -22,7 +21,8 @@ const socketClientInit = (server) => {
                     meetingManage[_roomId] = {
                         roomId: _roomId,
                         roomName: _roomName,
-                        userObjs: {}
+                        userObjs: {},
+                        msgArray: []
                     };
                 }
                 //添加用户
@@ -39,7 +39,10 @@ const socketClientInit = (server) => {
                         socket.broadcast.in(_roomId).emit('newUserJoin');
                     });
                 }
-                sendSandardMsg(socket, 'createUser_success', '创建成功', 1);
+
+                sendSandardMsg(socket, 'createUser_success', {
+                    msgArray: meetingManage[_roomId].msgArray
+                }, 1);
             } catch (error) {
                 sendSandardMsg(socket, 'createUser_success', error.message, 0);
             }
@@ -81,6 +84,11 @@ const socketClientInit = (server) => {
                             code: 1
                         });
                     }
+                    meetingManage[roomId].messageArray.push({
+                        msg: _message,
+                        sendUserId: myObj.userId,
+                        sendUserName: myObj.userName
+                    });
                     sendSandardMsg(socket, 'sendMessage_success', '200 ok', 1);
                 } else {
                     sendSandardMsg(socket, 'sendMessage_success', '请先加入一个房间', 0);
