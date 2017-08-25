@@ -170,11 +170,7 @@
                  } else {
                      console.log(parm);
                      logMeeting.debug('keepLive :' + parm);
-                     if (parm.janus == 'keepalive' || parm.janus == 'event') {
-                         _callback(null, parm);
-                     } else {
-                         _callback('操作失败', null);
-                     }
+                     _callback(null, parm);
                  }
              });
          } catch (error) {

@@ -98,6 +98,9 @@ const socketClientInit = (server) => {
             }
         });
 
+        //发送文件
+        
+
         //断开事件
         socket.on('disconnect', () => {
             try {
