@@ -111,10 +111,23 @@
      }
  });
 
+ //退出登录
+ router.get('/signOut', (req, res) => {
+     try {
+         logMeeting.debug('signOut enter');
+         delete req.session;
+         console.log(req.session)
+         sendSandardMsg(res, 1, '退出成功');
+     } catch (error) {
+         sendSandardMsg(res, 0, error.message);
+     }
+ })
+
  //自动登录
  router.get('/autoLogin', (req, res) => {
      try {
          logMeeting.debug('autoLogin enter');
+         console.log(req.session);
          if (req.session.userId && req.session.publicKey) {
              sendSandardMsg(res, 1, {
                  id: req.session.userId,
@@ -154,7 +167,7 @@
  })
 
  //加入房间
- router.post('/joinVedioRoom', checkToken, (req, res) => {
+ router.post('/joinVedioRoom', (req, res) => {
      try {
          logMeeting.debug('joinVedioRoom enter');
          const _janusId = req.body.janusId;
@@ -321,7 +334,7 @@
          dataMsg.parms = _parms;
      } else {
          dataMsg.msg = _parms;
+         logMeeting.debug(_parms);
      }
-     logMeeting.debug(dataMsg);
      _res.json(dataMsg);
  }

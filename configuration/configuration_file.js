@@ -3,8 +3,8 @@ module.exports = {
         host: 'localhost',
         port: '3306',
         user: 'root',
-        //password: '9824hfgdaf',
-        password: '123456',
+        password: '9824hfgdaf',
+        //password: '123456',
         database: 'metting',
         connectionLimit: 10,
         supportBigNumbers: true,
@@ -12,9 +12,9 @@ module.exports = {
         dialect: 'mysql'
     },
     mail_dev: {
-        service: 'sanlogic',
-        user: 'dingdz@sanlogic.com',
-        pass: 'Ddzyan101'
+        service: 'qq',
+        user: '619262284@qq.com',
+        pass: 'yisyflazjvbebbbh'
     },
     janus_dev: {
         //hostName: 'localhost',

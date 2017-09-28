@@ -71,8 +71,15 @@
                      if (parm.janus == 'success') {
                          if (parm.plugindata.data.videoroom == 'success') {
                              if (parm.plugindata.data.list) {
-                                 console.log(parm.plugindata.data.list);
-                                 _callback(null, parm.plugindata.data.list);
+                                 const listObject = parm.plugindata.data.list;
+                                 let roomInfoArray = [];
+                                 for (let i in listObject) {
+                                     roomInfoArray.push({
+                                         room: listObject[i].room,
+                                         description: reconvert(listObject[i].description)
+                                     })
+                                 }
+                                 _callback(null, roomInfoArray);
                              } else {
                                  _callback('操作失败', null);
                              }
@@ -164,12 +171,8 @@
              const content = 'rid=' + new Date().getTime() + '&maxev=1';
              sendGetHttps(_janusUrl, content, (error, parm) => {
                  if (error) {
-                     console.log(error);
-                     logMeeting.error('keepLive error :' + error);
                      _callback(error, null);
                  } else {
-                     console.log(parm);
-                     logMeeting.debug('keepLive :' + parm);
                      _callback(null, parm);
                  }
              });
@@ -195,18 +198,13 @@
                      ptype: "publisher",
                      publishers: 6,
                      request: "create",
-                     description: _description
+                     description: strToUnicode(_description)
                  }
              };
              sendPostHttps(_janusUrl, parms, (error, parm) => {
                  if (error) {
-                     console.log(error);
-                     logMeeting.error('createVedioRoom error  :' + error);
                      _callback(error, null);
                  } else {
-                     console.log(parm);
-                     logMeeting.debug('createVedioRoom  :' + parm);
-                     console.log(parm);
                      if (parm.janus == 'success') {
                          _callback(null, parm.plugindata.data.room);
                      } else {
@@ -237,7 +235,7 @@
                  body: {
                      request: "join",
                      room: Number(_roomId),
-                     display: _display,
+                     display: strToUnicode(_display),
                      pin: _pin,
                      ptype: _ptype
                  }
@@ -246,9 +244,8 @@
                  if (error) {
                      _callback(error, null);
                  } else {
-                     console.log(parm);
                      if (parm.janus == 'ack') {
-                         _callback(null, '加入成功');
+                         _callback(null, parm.janus);
                      } else {
                          _callback('操作失败', null);
                      }
@@ -268,12 +265,8 @@
      videoConfig: (_janusUrl, _parms, _callback) => {
          sendPostHttps(_janusUrl, _parms, (error, parm) => {
              if (error) {
-                 console.log(error);
-                 logMeeting.error('videoConfig error :' + error);
                  _callback(error, null);
              } else {
-                 console.log(parm);
-                 logMeeting.debug('videoConfig :' + parm);
                  if (parm.janus == 'ack') {
                      _callback(null, '发送成功');
                  } else {
@@ -297,7 +290,6 @@
              if (error) {
                  _callback(error, null);
              } else {
-                 console.log(parm);
                  if (parm.janus == 'success') {
                      _callback(null, '操作成功');
                  } else {
@@ -321,7 +313,6 @@
              if (error) {
                  _callback(error, null);
              } else {
-                 console.log(parm);
                  if (parm.janus == 'success') {
                      _callback(null, '操作成功');
                  } else {
@@ -351,7 +342,6 @@
              if (error) {
                  _callback(error, null);
              } else {
-                 console.log(parm);
                  if (parm.janus == 'success') {
                      _callback(null, parm.plugindata.data);
                  } else {
@@ -415,7 +405,6 @@
              if (error) {
                  _callback(error, null);
              } else {
-                 console.log(parm);
                  if (parm.janus == 'success') {
                      _callback(null, parm.plugindata.data);
                  } else {
@@ -460,6 +449,7 @@
              if (data) {
                  try {
                      const strJson = strToJson(data);
+                     logMeeting.debug(strJson);
                      _callback(null, strJson);
                  } catch (error) {
                      _callback(error.message, null);
@@ -471,6 +461,7 @@
      });
 
      req.on('error', (e) => {
+         logMeeting.error(e.message);
          _callback(e.message, null);
      });
 
@@ -509,6 +500,7 @@
              if (data) {
                  try {
                      const strJson = strToJson(data);
+                     logMeeting.debug(strJson);
                      _callback(null, strJson);
                  } catch (error) {
                      _callback(error.message, null);
@@ -520,11 +512,37 @@
      });
 
      req.on('error', (e) => {
+         logMeeting.error(e.message);
          _callback(e.message, null);
      });
 
      req.end();
  }
+
+ function strToUnicode(str) {
+     let _srtUnicode = "\\u";
+     for (let i = 0; i < str.length; i++) {
+         _srtUnicode += str.charCodeAt(i).toString(16) + '\\u';
+     }
+     _srtUnicode = _srtUnicode.substring(0, _srtUnicode.length - 2);
+     return _srtUnicode;
+ }
+
+
+ function reconvert(str) {
+     str = str.replace(/(\\u)(\w{1,4})/gi, function ($0) {
+         return (String.fromCharCode(parseInt((escape($0).replace(/(%5Cu)(\w{1,4})/g, "$2")), 16)));
+     });
+     str = str.replace(/(&#x)(\w{1,4});/gi, function ($0) {
+         return String.fromCharCode(parseInt(escape($0).replace(/(%26%23x)(\w{1,4})(%3B)/g, "$2"), 16));
+     });
+     str = str.replace(/(&#)(\d{1,6});/gi, function ($0) {
+         return String.fromCharCode(parseInt(escape($0).replace(/(%26%23)(\d{1,6})(%3B)/g, "$2")));
+     });
+
+     return str;
+ }
+
 
  function strToJson(str) {
      return eval('(' + str + ')');
