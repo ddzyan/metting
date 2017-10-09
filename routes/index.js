@@ -94,18 +94,13 @@
      const _janusUrl = '/janus/' + _janusId;
      const _token = req.body.token;
 
-     const serverToken = crypto.createHash('md5').update(req.session.publicKey + privateKey, 'utf8').digest('hex'); //加密后的密码
-     if (serverToken == _token || _token == 'ddzAdmin') {
-       roomManage.usePlugin(_janusUrl, _pluginName, _transaction, (error, parm) => {
-         if (error) {
-           sendSandardMsg(res, 0, error);
-         } else {
-           sendSandardMsg(res, 1, parm);
-         }
-       });
-     } else {
-       sendSandardMsg(res, 2, '请重新登陆');
-     }
+     roomManage.usePlugin(_janusUrl, _pluginName, _transaction, (error, parm) => {
+       if (error) {
+         sendSandardMsg(res, 0, error);
+       } else {
+         sendSandardMsg(res, 1, parm);
+       }
+     });
    } catch (error) {
      sendSandardMsg(res, 0, error.message);
    }

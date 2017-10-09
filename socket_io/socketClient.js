@@ -1,10 +1,10 @@
 "use strcict"
 const logSocketClient = require('../configuration/log4js.js').log_socketClient;
-const roomManage = require('./roomManage.js');
+const roomManage = require('../routes/roomManage.js');
 
 const socketClientInit = (server) => {
     const io = require('socket.io')(server);
-    let meetingManage = {};
+    let mettingManage = {};
     io.on('connection', function (socket) {
         const send_ip = get_ip_address(socket);
         logSocketClient.debug("connect client ip : ", send_ip);
@@ -12,37 +12,53 @@ const socketClientInit = (server) => {
         //创建用户加入房间
         socket.on('createUser', (data) => {
             try {
-                const _userName = data.userName; //房间内的名称
+                const _userName = data.userName;
                 const _userId = data.userId;
-                const _roomName = data.roomName; //display
-                const _roomId = data.roomId; //roomId
+                const _janusId = data.janusId;
+                const _roomName = data.roomName;
+                const _roomId = data.roomId;
+                const _roomType = data.roomType;
 
                 //房间不存在,则创建
-                if (!meetingManage[_roomId]) {
-                    meetingManage[_roomId] = {
-                        roomId: _roomId,
-                        roomName: _roomName,
-                        allObjs: {},
-                        publisher: _userId
-                    };
+                if (!mettingManage[_roomId]) {
+                    if (_roomId) {
+                        //创建
+                        mettingManage[_roomId] = {
+                            roomId: _roomId,
+                            roomName: _roomName,
+                            allUser: {},
+                            publisher: _userId,
+                            roomType: _roomType
+                        };
+                    } else {
+                        sendSandardMsg(socket, 'createUser_success', '参数错误', 0);
+                        return;
+                    }
                 }
+
                 //添加用户
                 socket.roomId = _roomId;
                 socket.userId = _userId;
-                if (!meetingManage[_roomId].allObjs[_userId]) {
-                    meetingManage[_roomId].allObjs[_userId] = {
+                if (!mettingManage[_roomId].allUser[_userId]) {
+                    mettingManage[_roomId].allUser[_userId] = {
                         socket: socket,
                         userName: _userName,
-                        userId: _userId
+                        userId: _userId,
+                        janusId: _janusId
                     };
 
                     socket.join(_roomId, () => {
                         socket.to(_roomId).emit(_userName + '加入了房间');
                     });
                 } else {
-                    meetingManage[_roomId].allObjs[_userId].socket = socket;
+                    mettingManage[_roomId].allUser[_userId].socket = socket;
                 }
-                sendSandardMsg(socket, 'createUser_success', {}, 1);
+                sendSandardMsg(socket, 'createUser_success', {
+                    roomId: mettingManage[_roomId].roomId,
+                    roomName: mettingManage[_roomId].roomName,
+                    publisher: mettingManage[_roomId].publisher,
+                    roomType: mettingManage[_roomId].roomType
+                }, 1);
             } catch (error) {
                 sendSandardMsg(socket, 'createUser_success', error.message, 0);
             }
@@ -56,14 +72,14 @@ const socketClientInit = (server) => {
 
                 if (socket.rooms && socket.userId) {
                     const roomId = Object.keys(socket.rooms)[0];
-                    const myObj = meetingManage[roomId].userObjs[socket.userId]
+                    const myObj = mettingManage[roomId].allUser[socket.userId]
 
                     if (_userIdArray) {
-                        const _userObjs = meetingManage[roomId].userObjs;
+                        const _userObjs = mettingManage[roomId].allUser;
                         for (let j = 0; j < _userIdArray.length; j++) {
                             for (let i in _userObjs) {
                                 if (_userObjs[i].userId == _userIdArray[j]) {
-                                    _userObjs[i].socket.emit('msg', {
+                                    _userObjs[i].socket.emit('systemMessage', {
                                         message: _message,
                                         userName: myObj.userName,
                                         userId: myObj.userId,
@@ -74,17 +90,14 @@ const socketClientInit = (server) => {
                             }
                         }
                     } else {
-                        // io.to(socket.rooms, {
-                        //     message: _message
-                        // });
-                        io.to(socket.rooms).emit('msg', {
+                        io.to(socket.rooms).emit('systemMessage', {
                             message: _message,
                             userName: myObj.userName,
                             userId: myObj.userId,
                             code: 1
                         });
                     }
-                    meetingManage[roomId].messageArray.push({
+                    mettingManage[roomId].messageArray.push({
                         msg: _message,
                         sendUserId: myObj.userId,
                         sendUserName: myObj.userName
@@ -98,15 +111,12 @@ const socketClientInit = (server) => {
             }
         });
 
-        //发送文件
-
-
         //断开事件
         socket.on('disconnect', () => {
             try {
                 if (socket.rooms && socket.userId) {
                     const _roomId = socket.roomId;
-                    const myObj = meetingManage[_roomId].userObjs[socket.userId]
+                    const myObj = mettingManage[_roomId].allUser[socket.userId]
                     socket.to(roomId).emit('msg', {
                         message: myObj.userName + '用户离开了房间',
                         userName: '系统',
@@ -115,13 +125,31 @@ const socketClientInit = (server) => {
                     });
 
                     socket.leave(roomId);
-                    delete meetingManage[roomId].userObjs[socket.userId];
+                    delete mettingManage[roomId].userObjs[socket.userId];
 
-                    if (meetingManage[roomId].length > 0) {
-                        const index = Object.keys(meetingManage[_roomId].allObjs)[0];
-                        meetingManage[_roomId].publisher = meetingManage[roomId].allObjs[index];
+                    if (mettingManage[roomId].length > 0) {
+                        const index = Object.keys(mettingManage[_roomId].allUser)[0];
+                        mettingManage[_roomId].publisher = mettingManage[roomId].allUser[index].userId;
                     } else {
-                        //关闭房间
+                        //获得session
+                        let _transaction = Math.random();
+                        _transaction = Math.random().toString(36).substring(2);
+                        const _janusUrl = '/janus/' + myObj._janusId;
+                        roomManage.usePlugin(_janusUrl, 'vedioRoom', _transaction, (error, parm) => {
+                            if (error) {
+                                sendSandardMsg(myObj.socket, error, 0);
+                            } else {
+                                //关闭房间
+                                const janusUrl2 = '/janus/' + myObj._janusId + '/' + parm.sessionId;
+                                roomManage.destroyRoom(janusUrl2, _transaction, _roomId, (error, parm) => {
+                                    if (error) {
+                                        sendSandardMsg(myObj.socket, error, 0);
+                                    } else {
+                                        sendSandardMsg(myObj.socket, _roomId + '房间关闭成功', 1);
+                                    }
+                                });
+                            }
+                        });
                     }
                     logSocketClient.debug(myObj.userName + '断开');
                 }
