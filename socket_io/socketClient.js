@@ -1,5 +1,6 @@
 "use strcict"
 const logSocketClient = require('../configuration/log4js.js').log_socketClient;
+const roomManage = require('./roomManage.js');
 
 const socketClientInit = (server) => {
     const io = require('socket.io')(server);
@@ -8,41 +9,40 @@ const socketClientInit = (server) => {
         const send_ip = get_ip_address(socket);
         logSocketClient.debug("connect client ip : ", send_ip);
 
-        //创建用户
+        //创建用户加入房间
         socket.on('createUser', (data) => {
             try {
-                const _userName = data.userName;
+                const _userName = data.userName; //房间内的名称
                 const _userId = data.userId;
-                const _roomName = data.roomName;
-                const _roomId = data.roomId;
+                const _roomName = data.roomName; //display
+                const _roomId = data.roomId; //roomId
 
                 //房间不存在,则创建
                 if (!meetingManage[_roomId]) {
                     meetingManage[_roomId] = {
                         roomId: _roomId,
                         roomName: _roomName,
-                        userObjs: {},
-                        msgArray: []
+                        allObjs: {},
+                        publisher: _userId
                     };
                 }
                 //添加用户
-                if (!meetingManage[_roomId].userObjs[_userId]) {
-                    socket.userId = _userId;
-                    meetingManage[_roomId].userObjs[_userId] = {
+                socket.roomId = _roomId;
+                socket.userId = _userId;
+                if (!meetingManage[_roomId].allObjs[_userId]) {
+                    meetingManage[_roomId].allObjs[_userId] = {
                         socket: socket,
                         userName: _userName,
                         userId: _userId
                     };
 
                     socket.join(_roomId, () => {
-                        //io.to('room 237', 'a new user has joined the room'); // broadcast to everyone in the room
-                        socket.broadcast.in(_roomId).emit('newUserJoin');
+                        socket.to(_roomId).emit(_userName + '加入了房间');
                     });
+                } else {
+                    meetingManage[_roomId].allObjs[_userId].socket = socket;
                 }
-
-                sendSandardMsg(socket, 'createUser_success', {
-                    msgArray: meetingManage[_roomId].msgArray
-                }, 1);
+                sendSandardMsg(socket, 'createUser_success', {}, 1);
             } catch (error) {
                 sendSandardMsg(socket, 'createUser_success', error.message, 0);
             }
@@ -99,26 +99,34 @@ const socketClientInit = (server) => {
         });
 
         //发送文件
-        
+
 
         //断开事件
         socket.on('disconnect', () => {
             try {
                 if (socket.rooms && socket.userId) {
-                    const roomId = Object.keys(socket.rooms)[0];
-                    const myObj = meetingManage[roomId].userObjs[socket.userId]
-                    socket.broadcast.in(roomId).emit('msg', {
+                    const _roomId = socket.roomId;
+                    const myObj = meetingManage[_roomId].userObjs[socket.userId]
+                    socket.to(roomId).emit('msg', {
                         message: myObj.userName + '用户离开了房间',
                         userName: '系统',
                         userId: null,
                         code: 2
                     });
 
+                    socket.leave(roomId);
                     delete meetingManage[roomId].userObjs[socket.userId];
+
+                    if (meetingManage[roomId].length > 0) {
+                        const index = Object.keys(meetingManage[_roomId].allObjs)[0];
+                        meetingManage[_roomId].publisher = meetingManage[roomId].allObjs[index];
+                    } else {
+                        //关闭房间
+                    }
                     logSocketClient.debug(myObj.userName + '断开');
                 }
             } catch (error) {
-
+                logSocketClient.debug(error);
             }
         })
     });

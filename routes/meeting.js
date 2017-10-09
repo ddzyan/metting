@@ -26,8 +26,7 @@
  //登录
  router.post('/signin', (req, res) => {
      try {
-         logMeeting.debug('signin enter');
-         console.log(req.url);
+         console.log('signin enter');
          const _account = req.body.account;
          //const _password = crypto.createHash('md5').update(req.body.password, 'utf8').digest('hex'); //加密后的密码
          const _password = req.body.password;
@@ -70,7 +69,7 @@
  //注册
  router.post('/signup', (req, res) => {
      try {
-         logMeeting.debug('signup enter');
+         console.log('signup enter');
          const _account = req.body.account;
          //const _password = crypto.createHash('md5').update(req.body.password, 'utf8').digest('hex'); //加密后的密码
          const _password = req.body.password;
@@ -114,7 +113,7 @@
  //退出登录
  router.get('/signOut', (req, res) => {
      try {
-         logMeeting.debug('signOut enter');
+         console.log('signOut enter');
          delete req.session;
          console.log(req.session)
          sendSandardMsg(res, 1, '退出成功');
@@ -126,7 +125,7 @@
  //自动登录
  router.get('/autoLogin', (req, res) => {
      try {
-         logMeeting.debug('autoLogin enter');
+         console.log('autoLogin enter');
          console.log(req.session);
          if (req.session.userId && req.session.publicKey) {
              sendSandardMsg(res, 1, {
@@ -144,14 +143,16 @@
  //创建房间
  router.post('/createVedioRoom', checkToken, (req, res) => {
      try {
-         logMeeting.debug('createVedioRoom enter');
+         console.log('createVedioRoom enter');
          const _janusId = req.body.janusId;
-         const _transaction = req.body.transaction;
          const _sessionId = req.body.sessionId;
+         const _transaction = req.body.transaction;
          const _description = req.body.description;
+         const _pin = req.body.pin;
+         const _record = req.body.record;
 
          const janusUrl = '/janus/' + _janusId + '/' + _sessionId;
-         roomManage.createVedioRoom(janusUrl, _transaction, _description, (error, parm) => {
+         roomManage.createVedioRoom(janusUrl, _transaction, _pin, _description, _record, (error, parm) => {
              if (error) {
                  sendSandardMsg(res, 0, error);
              } else {
@@ -169,7 +170,7 @@
  //加入房间
  router.post('/joinVedioRoom', (req, res) => {
      try {
-         logMeeting.debug('joinVedioRoom enter');
+         console.log('joinVedioRoom enter');
          const _janusId = req.body.janusId;
          const _transaction = req.body.transaction;
          const _sessionId = req.body.sessionId;
@@ -183,7 +184,7 @@
              if (error) {
                  sendSandardMsg(res, 0, error);
              } else {
-                 sendSandardMsg(res, 1, '操作成功');
+                 sendSandardMsg(res, 1, parm);
              }
          });
      } catch (error) {
@@ -194,7 +195,7 @@
  //发送邀请邮件
  router.post('/invitationToMail', checkToken, (req, res) => {
      try {
-         logMeeting.debug('invitationToMail enter');
+         console.log('invitationToMail enter');
          //邮件内容
          const _receiveAddress = req.body.receiveAddress;
          const _roomId = req.body.roomId;
@@ -234,10 +235,11 @@
  //关闭无效数据通道
  router.post('/detach', checkToken, (req, res) => {
      try {
-         logMeeting.debug('detachData enter');
+         console.log('detachData enter');
          const _janusId = req.body.janusId;
          const _sessionId = req.body.sessionId;
-         const _transaction = req.body.transaction;
+         let _transaction = Math.random();
+         _transaction = Math.random().toString(36).substring(2);
 
          const janusUrl = '/janus/' + _janusId + '/' + _sessionId;
          roomManage.detachData(janusUrl, _transaction, (error, parm) => {
@@ -255,7 +257,7 @@
  //用户退出
  router.post('/hangup', checkToken, (req, res) => {
      try {
-         logMeeting.debug('hangup enter');
+         console.log('hangup enter');
          const _janusId = req.body.janusId;
          const _sessionId = req.body.sessionId;
          const _transaction = req.body.transaction;
@@ -276,7 +278,7 @@
  //检测房间是否存在
  router.post('/roomExists', (req, res) => {
      try {
-         logMeeting.debug('roomExists enter');
+         console.log('roomExists enter');
          const _janusId = req.body.janusId;
          const _sessionId = req.body.sessionId;
          const _roomId = Number(req.body.roomId);
@@ -298,7 +300,7 @@
  //踢出用户
  router.post('/kickOutUser', checkToken, (req, res) => {
      try {
-         logMeeting.debug('kickOutUser enter');
+         console.log('kickOutUser enter');
          const _janusId = req.body.janusId;
          const _sessionId = req.body.sessionId;
          const _roomId = Number(req.body.roomId);
@@ -334,7 +336,7 @@
          dataMsg.parms = _parms;
      } else {
          dataMsg.msg = _parms;
-         logMeeting.debug(_parms);
+         console.log(_parms);
      }
      _res.json(dataMsg);
  }

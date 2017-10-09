@@ -36,7 +36,6 @@
                  if (error) {
                      callback(error, null);
                  } else {
-                     console.log(parm);
                      if (parm.janus == 'success') {
                          _callback(null, '操作成功');
                      } else {
@@ -76,7 +75,11 @@
                                  for (let i in listObject) {
                                      roomInfoArray.push({
                                          room: listObject[i].room,
-                                         description: reconvert(listObject[i].description)
+                                         description: reconvert(listObject[i].description),
+                                         pin_required: listObject[i].pin_required,
+                                         max_publishers: listObject[i].max_publishers,
+                                         num_participants: listObject[i].num_participants,
+                                         record: listObject[i].record
                                      })
                                  }
                                  _callback(null, roomInfoArray);
@@ -144,7 +147,6 @@
                      if (error) {
                          _callback(error, null);
                      } else {
-                         console.log(parm);
                          if (parm.janus == 'success') {
                              _callback(null, parm.data);
                          } else {
@@ -173,6 +175,7 @@
                  if (error) {
                      _callback(error, null);
                  } else {
+                     console.log(parm);
                      _callback(null, parm);
                  }
              });
@@ -183,11 +186,13 @@
      //创建房间
      /*
      @parm 链接地址
+     @parm 事物代码
+     @parm 房间密码
      @parm 房间名称
-     @parm 时间代码
+     @parm 是否记录
      @parm 回调函数
      */
-     createVedioRoom: (_janusUrl, _transaction, _description, _callback) => {
+     createVedioRoom: (_janusUrl, _transaction, _pin, _description, _record, _callback) => {
          try {
              const parms = {
                  janus: "message",
@@ -196,8 +201,10 @@
                      bitrate: 128000,
                      is_private: false,
                      ptype: "publisher",
+                     pin: _pin,
                      publishers: 6,
                      request: "create",
+                     record: _record,
                      description: strToUnicode(_description)
                  }
              };
@@ -205,6 +212,7 @@
                  if (error) {
                      _callback(error, null);
                  } else {
+                     console.log(parm);
                      if (parm.janus == 'success') {
                          _callback(null, parm.plugindata.data.room);
                      } else {
@@ -213,6 +221,7 @@
                  }
              });
          } catch (error) {
+             console.log(error);
              _callback(error.message, null);
          }
      },
@@ -245,7 +254,7 @@
                      _callback(error, null);
                  } else {
                      if (parm.janus == 'ack') {
-                         _callback(null, parm.janus);
+                         _callback(null, parm);
                      } else {
                          _callback('操作失败', null);
                      }
@@ -268,7 +277,7 @@
                  _callback(error, null);
              } else {
                  if (parm.janus == 'ack') {
-                     _callback(null, '发送成功');
+                     _callback(null, parm);
                  } else {
                      _callback('操作失败', null);
                  }
@@ -449,7 +458,7 @@
              if (data) {
                  try {
                      const strJson = strToJson(data);
-                     logMeeting.debug(strJson);
+                     //logMeeting.debug(strJson);
                      _callback(null, strJson);
                  } catch (error) {
                      _callback(error.message, null);
@@ -500,7 +509,7 @@
              if (data) {
                  try {
                      const strJson = strToJson(data);
-                     logMeeting.debug(strJson);
+                     //logMeeting.debug(strJson);
                      _callback(null, strJson);
                  } catch (error) {
                      _callback(error.message, null);
@@ -547,7 +556,5 @@
  function strToJson(str) {
      return eval('(' + str + ')');
  }
-
-
 
  module.exports = roomManage;
