@@ -12,6 +12,7 @@ var fs = require('fs');
 var certificate = fs.readFileSync('certs/mycert.pem', 'utf8');
 var privateKey = fs.readFileSync('certs/mycert.key', 'utf8');
 var socketClientInit = require('../socket_io/socketClient.js');
+var models = require('../orm-sequelize').models;
 var credentials = {
   key: privateKey,
   cert: certificate
@@ -31,6 +32,9 @@ app.set('port', port);
 /**
  * Create HTTP server.
  */
+models.sequelize.authenticate().then(function () {
+  
+})
 
 var server = http.createServer(app);
 httpsServer.listen(SSLPORT, function () {
@@ -47,6 +51,7 @@ server.on('error', onError);
 server.on('listening', onListening);
 
 socketClientInit(httpsServer);
+
 
 /**
  * Normalize a port into a number, string, or false.

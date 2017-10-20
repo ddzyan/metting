@@ -1,5 +1,5 @@
 const SequelizeAuto = require('sequelize-auto');
-const dbconfig = require('../configure/db_config.js').mysql_dev;
+const dbconfig = require('../configuration/configuration_file.js').mysql_dev;
 const auto = new SequelizeAuto(dbconfig.database, dbconfig.user, dbconfig.password, {
     host: dbconfig.host,
     port: dbconfig.port,

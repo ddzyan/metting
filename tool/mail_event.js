@@ -14,7 +14,7 @@ const mailEvent = {
             from: '619262284@qq.com', // 发送者   
             to: _receiveAddress,
             subject: 'SanlogicMeeting 邀请', // 标题  
-            text: '点击链接,进入房间:https://192.168.20.211:18081/#/room/' + _roomId, // 文本  
+            text: '点击链接,进入房间:https://61.164.221.4:18081/#/room/' + _roomId, // 文本  
         };
 
         transporter.sendMail(mailOptions, function (err, info) {

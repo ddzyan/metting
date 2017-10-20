@@ -5,7 +5,7 @@
  const Sequelize = require('sequelize');
  const fs = require('fs');
  const path = require('path');
- const dbconfig = require('../../configure/db_config.js').mysql_dev;
+ const dbconfig = require('../../configuration/configuration_file.js').mysql_dev;
 
  const sequelize = new Sequelize(
  	dbconfig.database, //数据库名称

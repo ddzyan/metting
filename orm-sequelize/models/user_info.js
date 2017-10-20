@@ -1,6 +1,6 @@
 /* jshint indent: 1 */
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
 	return sequelize.define('user_info', {
 		id: {
 			type: DataTypes.BIGINT,
@@ -9,11 +9,11 @@ module.exports = function(sequelize, DataTypes) {
 			autoIncrement: true
 		},
 		account: {
-			type: DataTypes.STRING(20),
+			type: DataTypes.STRING(35),
 			allowNull: false
 		},
 		password: {
-			type: DataTypes.STRING(20),
+			type: DataTypes.STRING(255),
 			allowNull: false
 		},
 		ctime: {
@@ -22,6 +22,7 @@ module.exports = function(sequelize, DataTypes) {
 			defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
 		}
 	}, {
-		tableName: 'user_info'
+		tableName: 'user_info',
+		timestamps: false
 	});
 };
