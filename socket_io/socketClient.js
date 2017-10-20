@@ -81,7 +81,8 @@ const socketClientInit = (server) => {
                         socket: socket,
                         userName: userName,
                         userId: userId,
-                        janusId: janusId
+                        janusId: janusId,
+                        ip: send_ip
                     };
 
                     socket.join(roomId, () => {
@@ -100,6 +101,35 @@ const socketClientInit = (server) => {
             } catch (error) {
                 console.log(error);
                 sendSandardMsg(socket, 'createUser_success', error || error.message, 0);
+            }
+        });
+
+        //重新连接
+        socket.on('restart', () => {
+            try {
+                logSocketClient.debug('restart enter');
+
+                const send_ip = get_ip_address(socket);
+                for (let i in mettingManage) {
+                    if (mettingManage[i].allUser) {
+                        const mettingObj = mettingManage[i].allUser;
+                        for (let j in mettingObj) {
+                            if (mettingObj[j].ip == send_ip) {
+                                socket.roomId = mettingObj[j].socket.roomId;
+                                socket.janusId = mettingObj[j].socket.janusId;
+                                socket.userName = mettingObj[j].socket.userName;
+                                mettingObj[j].socket = socket;
+                                sendSandardMsg(socket, 'restart_success', '重连成功', 1);
+                                break;
+                            }
+                        }
+                    } else {
+                        sendSandardMsg(socket, 'restart_success', '重新登陆', 0);
+                    }
+                }
+            } catch (error) {
+                console.log(error);
+                sendSandardMsg(socket, 'restart_success', error || error.message, 0);
             }
         });
 
