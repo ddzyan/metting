@@ -1,2 +1,2 @@
 # metting
-janus-gataway用户管理
+janus-gateway用户管理
